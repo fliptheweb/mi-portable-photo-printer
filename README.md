@@ -13,7 +13,7 @@ no Mi Home app, no phone.
 
 The printer only pairs with the Mi Home phone app over Bluetooth - no Wi-Fi, no AirPrint. `mizink`
 prints to it from a script, so it can be a Home Assistant action or a "print this" button instead
-of a phone-only gadget. Protocol and encryption were reverse-engineered from packet captures.
+of a phone-only gadget. [Protocol](docs/PROTOCOL.md) and encryption were reverse-engineered from Bluetooth packet captures.
 
 ## What it does
 
@@ -33,7 +33,7 @@ pip install ".[macos]"
 
 > [!IMPORTANT]
 > Tested on macOS only, with one printer (`hannto.printer.basil`). Other platforms need an
-> RFCOMM transport shim - see [docs/PROTOCOL.md](docs/PROTOCOL.md).
+> RFCOMM transport shim - see [Protocol](docs/PROTOCOL.md).
 
 ## Setup
 
