@@ -1,8 +1,8 @@
 # Protocol notes
 
-Reverse-engineered from Bluetooth captures of a Mi Portable Photo Printer
-(`hannto.printer.basil`, model `XMKDDYJ01HM` / `XMKDDYJHT02`, made by Hannto) and verified
-by driving real hardware. The frame format is shared with other Hannto printers (Xiaomi
+Reverse-engineered from iPhone Bluetooth captures of the Mi Home app talking to a Mi Portable
+Photo Printer (`hannto.printer.basil`, model `XMKDDYJ01HM` / `XMKDDYJHT02`, made by Hannto) and
+verified by driving real hardware. The frame format is shared with other Hannto printers (Xiaomi
 Photo Printer Pro, Liene PixCut), so parts may transfer to those.
 
 ## Transport
