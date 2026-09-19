@@ -1,7 +1,9 @@
 # mizink
 
+<img src="docs/printer.jpg" alt="Xiaomi Mi Portable Photo Printer" width="280" align="right">
+
 Print to the **Xiaomi Mi Portable Photo Printer** over Bluetooth from your Mac —
-no Mi Home app, no cloud at print time.
+no Mi Home app, no phone.
 
 **Supported device**
 
