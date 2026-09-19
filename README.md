@@ -1,20 +1,24 @@
 # mizink
 
-<img src="docs/printer.jpg" alt="Xiaomi Mi Portable Photo Printer" width="280" align="right">
+<table>
+<tr>
+<td width="180" valign="top">
+<img src="docs/printer.jpg" alt="Xiaomi Mi Portable Photo Printer" width="180">
+</td>
+<td valign="top">
 
 Print to the **Xiaomi Mi Portable Photo Printer** over Bluetooth from your Mac —
 no Mi Home app, no phone.
 
 **Supported device**
 
-| | |
-|---|---|
-| Full name | Xiaomi Mi Portable Photo Printer (ZINK) |
-| Retail model | `XMKDDYJ01HM` (firmware reports `XMKDDYJHT02`) |
-| MIoT model | `hannto.printer.basil` |
-| Manufacturer | Hannto (OEM for Xiaomi) |
-| Print tech | ZINK (Zero-INK), 2×3″ sticky-back photo paper, 1040×1560 px |
-| Link | Bluetooth Classic (RFCOMM / SPP) |
+- **Full name** — Xiaomi Mi Portable Photo Printer (ZINK)
+- **Retail model** — `XMKDDYJ01HM` (firmware reports `XMKDDYJHT02`)
+- **MIoT model** — `hannto.printer.basil`
+
+</td>
+</tr>
+</table>
 
 ```bash
 mizink status                 # battery + state
@@ -29,7 +33,7 @@ phone app over Bluetooth. That makes it impossible to print from a laptop, a ser
 smart-home setup like Home Assistant. There was no library and no public protocol for this
 model, so photos could only come from a phone.
 
-We wanted one thing: **send a picture to this printer from a script**, so it can become a
+I wanted one thing: **send a picture to this printer from a script**, so it can become a
 building block — a Home Assistant action, a photo-booth, a "print this" button — instead of
 a phone-only gadget. Getting there meant reverse-engineering the Bluetooth protocol and its
 encryption from packet captures. `mizink` is the result, packaged so anyone with the same
@@ -52,6 +56,7 @@ pip install mizink                 # + on macOS:
 pip install "mizink[macos]"
 ```
 
+> [!IMPORTANT]
 > **Tested on macOS only** (Apple's IOBluetooth stack), against a single printer
 > (`hannto.printer.basil`). It has not been run on Linux or Windows, or on other printer
 > models. Linux/Windows need a small transport shim over an RFCOMM serial port
