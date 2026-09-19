@@ -1,8 +1,6 @@
 # mizink
 
-<table>
-<tr>
-<td valign="top">
+<img src="docs/printer.jpg" alt="Xiaomi Mi Portable Photo Printer" width="170" align="right">
 
 Print to the **Xiaomi Mi Portable Photo Printer** over Bluetooth from your Mac -
 no Mi Home app, no phone.
@@ -10,13 +8,6 @@ no Mi Home app, no phone.
 - **Full name** - Xiaomi Mi Portable Photo Printer (ZINK)
 - **Retail model** - `XMKDDYJ01HM` (firmware `XMKDDYJHT02`)
 - **MIoT model** - `hannto.printer.basil`
-
-</td>
-<td width="180" valign="top">
-<img src="docs/printer.jpg" alt="Xiaomi Mi Portable Photo Printer" width="180">
-</td>
-</tr>
-</table>
 
 ## Why
 
@@ -44,12 +35,15 @@ pip install "mizink[macos]"
 
 ## Setup
 
-1. Pair the printer with your Mac's Bluetooth once.
-2. Get your printer's 12-byte token - three ways (full guide in [docs/GET_KEY.md](docs/GET_KEY.md)):
+The printer encrypts everything with a key that is unique to *your* device - its 12-byte Xiaomi
+miio token. You need yours; there is no shared or default key.
+
+1. Get your printer's token - three ways (full guide in [docs/GET_KEY.md](docs/GET_KEY.md)):
    - from **Home Assistant** - [`extract_token_from_ha.py`](tools/extract_token_from_ha.py)
    - from **Mi Cloud** - [Xiaomi-cloud-tokens-extractor](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)
    - **without a token** - recover a keystream from a white-page capture with [`recover_keystream_from_pklg.py`](tools/recover_keystream_from_pklg.py)
-3. Pass `--token`/`--address`, set `MIZINK_TOKEN`/`MIZINK_ADDRESS`, or use
+2. Pair the printer with your Mac's Bluetooth once.
+3. Configure - pass `--token`/`--address`, set `MIZINK_TOKEN`/`MIZINK_ADDRESS`, or use
    `~/.config/mizink/config.json` (see `config.example.json`).
 
 ```bash
