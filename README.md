@@ -26,7 +26,9 @@ mizink keepalive --reconnect  # hold the idle-dropping link open for a service
 ## Install
 
 ```bash
-pip install "mizink[macos]"
+git clone https://github.com/fliptheweb/mi-portable-photo-printer.git
+cd mi-portable-photo-printer
+pip install ".[macos]"
 ```
 
 > [!IMPORTANT]
