@@ -10,29 +10,15 @@ over Bluetooth, so you have to read it from your Xiaomi account. Any of the rout
 ## Option A — from Home Assistant (easiest if you already use it)
 
 If you added the printer through the **Xiaomi Miot Auto** integration
-(`al-one/hass-xiaomi-miot`), the token is cached on disk. This prints the token, MAC and
-`did` for every Hannto printer it finds:
+(`al-one/hass-xiaomi-miot`), the token is cached on disk. Run the helper script, passing your
+Home Assistant config directory (default `~/homeassistant`; e.g. `/config` in the container):
 
 ```bash
-python3 - "$HOME/homeassistant" <<'PY'
-import json, sys, glob, os
-cfg = sys.argv[1]  # your Home Assistant config dir
-def walk(o):
-    if isinstance(o, list):
-        for x in o: yield from walk(x)
-    elif isinstance(o, dict):
-        if str(o.get("model", "")).startswith("hannto.printer"):
-            yield o
-        for v in o.values(): yield from walk(v)
-for f in glob.glob(os.path.join(cfg, ".storage/xiaomi_miot/devices-*.json")):
-    for d in walk(json.load(open(f))):
-        print("model:", d.get("model"), "mac:", d.get("mac"),
-              "did:", d.get("did"), "token:", d.get("token"))
-PY
+python tools/extract_token_from_ha.py ~/homeassistant
 ```
 
-Replace `$HOME/homeassistant` with your Home Assistant config directory (e.g. `/config` in
-the container, or `~/.homeassistant`).
+It prints the name, model, MAC, `did` and `token` of every Hannto printer it finds. Script:
+[`tools/extract_token_from_ha.py`](../tools/extract_token_from_ha.py).
 
 ## Option B — from Mi Cloud directly
 

@@ -1,6 +1,6 @@
 # mizink
 
-Print to the **Xiaomi Mi Portable Photo Printer** over Bluetooth from your own computer —
+Print to the **Xiaomi Mi Portable Photo Printer** over Bluetooth from your Mac —
 no Mi Home app, no cloud at print time.
 
 **Supported device**
@@ -59,10 +59,18 @@ pip install "mizink[macos]"
 
 ## Setup
 
-1. **Pair** the printer with your computer's Bluetooth once, like any device.
-2. **Get your printer's key.** Encryption is tied to *your* device, so you need its
-   12-byte miio token (or a keystream captured from one print). Two-minute guide:
-   [docs/GET_KEY.md](docs/GET_KEY.md).
+1. **Pair** the printer with your Mac's Bluetooth once, like any device.
+2. **Get your printer's key.** Encryption is tied to *your* device, so you need its 12-byte
+   miio token. Three ways — full guide in [docs/GET_KEY.md](docs/GET_KEY.md):
+   - **Home Assistant** (if you use `xiaomi_miot`): run
+     [`tools/extract_token_from_ha.py`](tools/extract_token_from_ha.py) to read the token from
+     its device cache.
+   - **Mi Cloud**: log in with
+     [Xiaomi-cloud-tokens-extractor](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)
+     and copy the printer's `token`.
+   - **No token** — capture one print of a pure-white page and recover the equivalent keystream
+     with [`tools/recover_keystream_from_pklg.py`](tools/recover_keystream_from_pklg.py)
+     (use `--keystream` instead of `--token`).
 3. **Configure** — pass `--address`/`--token`, set `MIZINK_ADDRESS`/`MIZINK_TOKEN`, or drop
    a `~/.config/mizink/config.json` (see `config.example.json`).
 
@@ -90,10 +98,9 @@ as a background service so the link is warm when an automation fires. Example in
 
 ## Safety & scope
 
-- Each print consumes a sheet of ZINK paper. Battery below ~20% may refuse to print.
 - Your token is a per-device secret. Do not commit it; `config.json` and `*.keystream` are
   git-ignored.
-- Independent, community reverse-engineering. Not affiliated with or endorsed by Xiaomi or
+- Reverse-engineered from packet captures. Not affiliated with or endorsed by Xiaomi or
   Hannto. "Xiaomi", "Mijia" and "Hannto" are trademarks of their owners. Use at your own risk.
 
 ## License
