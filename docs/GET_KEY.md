@@ -7,7 +7,7 @@ over Bluetooth, so you have to read it from your Xiaomi account. Any of the rout
 > The token is a secret. Don't share it or commit it. `mizink` reads it from `--token`,
 > `MIZINK_TOKEN`, or `~/.config/mizink/config.json`.
 
-## Option A — from Home Assistant (easiest if you already use it)
+## Option A - from Home Assistant (easiest if you already use it)
 
 If you added the printer through the **Xiaomi Miot Auto** integration
 (`al-one/hass-xiaomi-miot`), the token is cached on disk. Run the helper script, passing your
@@ -20,13 +20,13 @@ python tools/extract_token_from_ha.py ~/homeassistant
 It prints the name, model, MAC, `did` and `token` of every Hannto printer it finds. Script:
 [`tools/extract_token_from_ha.py`](../tools/extract_token_from_ha.py).
 
-## Option B — from Mi Cloud directly
+## Option B - from Mi Cloud directly
 
 Use **[Xiaomi-cloud-tokens-extractor](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)**:
 log in with your Xiaomi account, pick the right server (region), and it lists every device with
 its `token`. Find the one named "Mi Portable Photo Printer" / model `hannto.printer.basil`.
 
-## Option C — no token, capture a keystream instead
+## Option C - no token, capture a keystream instead
 
 You don't strictly need the raw token: because the cipher restarts for every frame, a single
 928-byte **keystream** is an equivalent secret. You can recover it from one Bluetooth capture
