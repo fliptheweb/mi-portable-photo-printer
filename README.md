@@ -1,7 +1,18 @@
 # mizink
 
-Print to the **Xiaomi Mi Portable Photo Printer** (ZINK, model `hannto.printer.basil`) over
-Bluetooth from your own computer — no Mi Home app, no cloud at print time.
+Print to the **Xiaomi Mi Portable Photo Printer** over Bluetooth from your own computer —
+no Mi Home app, no cloud at print time.
+
+**Supported device**
+
+| | |
+|---|---|
+| Full name | Xiaomi Mi Portable Photo Printer (ZINK) |
+| Retail model | `XMKDDYJ01HM` (firmware reports `XMKDDYJHT02`) |
+| MIoT model | `hannto.printer.basil` |
+| Manufacturer | Hannto (OEM for Xiaomi) |
+| Print tech | ZINK (Zero-INK), 2×3″ sticky-back photo paper, 1040×1560 px |
+| Link | Bluetooth Classic (RFCOMM / SPP) |
 
 ```bash
 mizink status                 # battery + state
@@ -39,8 +50,12 @@ pip install mizink                 # + on macOS:
 pip install "mizink[macos]"
 ```
 
-macOS is supported today (IOBluetooth). Linux/Windows need a small transport shim over an
-RFCOMM serial port — see [docs/PROTOCOL.md](docs/PROTOCOL.md); the protocol layer is identical.
+> **Tested on macOS only** (Apple's IOBluetooth stack), against a single printer
+> (`hannto.printer.basil`). It has not been run on Linux or Windows, or on other printer
+> models. Linux/Windows need a small transport shim over an RFCOMM serial port
+> (`rfcomm bind` / an outgoing COM port) — see [docs/PROTOCOL.md](docs/PROTOCOL.md); the
+> protocol layer above the transport is identical, so a port should be straightforward.
+> Reports and PRs for other platforms and printers are welcome.
 
 ## Setup
 

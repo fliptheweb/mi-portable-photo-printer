@@ -89,24 +89,33 @@ def split_frames(buf):
     return out
 
 # ------------------------------------------------------------- recovery ---
-def crib_drag(bodies, key):
-    """Anchor keystream at low offsets from known JSON prefixes and the status-reply template."""
-    # guaranteed frame prefixes (encoding starts every JSON body at offset 0).
-    # The idle status reply has a fixed layout up to the battery field, which reaches ~70
-    # bytes — enough to read the flat file pattern below.
-    PREFIX = [b'{"id":', b'{"result":[{"fw_ver":"',
-              b'{"result":{"job_id":', b'{"result":["OK"],"id":', b'{"error":{"code":',
-              b'{"method":"event.',
-              b'{"result":{"category":"idle","sub_category":"idle","error":0,"battery":',
-              b'{"result":{"category":"idle","sub_category":"init","error":0,"battery":',
-              b'{"result":{"category":"']
+def crib_drag(bodies, key, min_votes=3):
+    """Anchor keystream at low offsets by voting known JSON frame prefixes against every body.
+
+    Each candidate prefix is XORed against every frame; a wrong (prefix, frame) pairing yields
+    scattered one-off keystream guesses, while the right pairing agrees across the many frames
+    that share that prefix. Only offsets whose top guess clears `min_votes` are accepted, so
+    ambiguous shared prefixes (e.g. two different `{"result":...` replies) cannot corrupt it.
+    """
+    # Fixed-layout prefixes the printer/app emit. The idle status reply is byte-stable up to
+    # the battery field (~70 bytes), which is enough to read the flat file pattern afterwards.
+    PREFIXES = [
+        b'{"id":',
+        b'{"result":["OK"],"id":',
+        b'{"result":{"category":"idle","sub_category":"idle","error":0,"battery":',
+        b'{"result":{"category":"idle","sub_category":"init","error":0,"battery":',
+        b'{"result":[{"fw_ver":"',
+    ]
+    votes = collections.defaultdict(collections.Counter)
     for body in bodies:
-        for crib in PREFIX:
+        for crib in PREFIXES:
             if len(body) >= len(crib):
-                # accept the longest prefix that stays self-consistent with what we have
-                if all(key.get(o, body[o] ^ c) == body[o] ^ c for o, c in enumerate(crib)):
-                    for o, c in enumerate(crib):
-                        key.setdefault(o, body[o] ^ c)
+                for o, c in enumerate(crib):
+                    votes[o][body[o] ^ c] += 1
+    for o in sorted(votes):
+        val, n = votes[o].most_common(1)[0]
+        if n >= min_votes and val not in (v for v, _ in votes[o].most_common()[1:] if _ == n):
+            key.setdefault(o, val)
 
 def recover_from_frames(file_bodies, ch1_bodies):
     """Core recovery from already-extracted frame bodies. Returns 928 keystream bytes."""

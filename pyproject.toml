@@ -25,7 +25,7 @@ macos = ["pyobjc-framework-IOBluetooth>=9"]
 mizink = "mizink.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/YOURNAME/mizink"
+Homepage = "https://github.com/fliptheweb/mi-portable-photo-printer"
 
 [tool.setuptools]
 packages = ["mizink"]
