@@ -67,6 +67,13 @@ with Printer("F0:13:C1:3F:63:94", Cipher.from_token("<token>")) as p:
 Call `mizink print` from a [`shell_command`](https://www.home-assistant.io/integrations/shell_command/),
 and run `mizink keepalive --reconnect` as a background service. See [examples/](examples/).
 
+## Other models
+
+Got the **Xiaomi Portable Photo Printer Pro** instead? It speaks the same frame format but a
+different cipher (AES-ECB after a Diffie-Hellman handshake) - use
+[tuat-yate/xiaomi-photo-printer](https://github.com/tuat-yate/xiaomi-photo-printer), which also
+helped confirm the frame format here.
+
 ## Notes
 
 Unofficial, reverse-engineered. Not affiliated with Xiaomi or Hannto; their names are trademarks.
