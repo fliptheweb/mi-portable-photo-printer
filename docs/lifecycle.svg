@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="340" viewBox="0 0 1240 340" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="235" viewBox="0 95 1240 235" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
   <defs>
     <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
       <circle cx="2" cy="2" r="1.4" fill="#dfe3ea"/>
@@ -13,9 +13,6 @@
 
   <rect width="1240" height="340" fill="#fbfcfe"/>
   <rect width="1240" height="340" fill="url(#dots)"/>
-
-  <text x="40" y="46" font-size="22" font-weight="700" fill="#2b3040">Print lifecycle</text>
-  <text x="40" y="70" font-size="14" fill="#6b7280">mixed_status → sub_category, from connect to done</text>
 
   <!-- category bands -->
   <rect x="380" y="250" width="650" height="30" rx="15" fill="#eaf3ff" stroke="#bcd6ff"/>
