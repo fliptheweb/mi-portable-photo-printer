@@ -35,6 +35,8 @@ class Printer:
         self._frames: list = []
         self._buf = bytearray()
         self.conn: Connection | None = None
+        self.last_job_info: dict = {}    # job_info result of the most recent print
+        self.last_telemetry: dict = {}   # counters from the printer's event.big_data
 
     # -- connection ------------------------------------------------------
     def connect(self) -> "Printer":
@@ -112,6 +114,26 @@ class Printer:
         r = self.rpc("get_prop", ["device_info"]).get("result", [{}])
         return r[0] if isinstance(r, list) and r else {}
 
+    def clean_data(self) -> dict:
+        """Reset the data channel before a job. The Mi Home app sends this before every print."""
+        return self.rpc("clean_data", {"delay_times": 0})
+
+    def job_info(self, job_id: int) -> dict:
+        """Per-job status: job_state, prt_copies, transfer_time, print_time, ..."""
+        r = self.rpc("job_info", [job_id]).get("result", [{}])
+        return r[0] if isinstance(r, list) and r else {}
+
+    @staticmethod
+    def _parse_telemetry(params: dict) -> dict:
+        """Flatten a printer `event.big_data` payload into usage counters."""
+        total = params.get("total", {}) if isinstance(params, dict) else {}
+        return {
+            "printed_total": total.get("printed"),
+            "finished_total": total.get("finished"),
+            "tmd_code": params.get("TMD_code"),
+            "did": params.get("did"),
+        }
+
     def keep_alive(self, interval: float = 5.0, on_status=None) -> None:
         """Hold the connection open, pinging status every `interval` s (Ctrl+C to stop)."""
         self.conn.keep_alive(lambda: self.status(), interval=interval, on_status=on_status)
@@ -135,6 +157,7 @@ class Printer:
         If `wait`, block until the printer returns to idle (or `timeout`).
         """
         jpeg = _image.prepare(source, fit=fit)
+        self.clean_data()  # the native app resets the data channel before every job
         r = self.rpc("print_job", {"copies": copies, "channel": 64,
                                    "job_type": 0, "file_size": len(jpeg)}, timeout=30)
         res = r.get("result")
@@ -152,14 +175,20 @@ class Printer:
         while time.time() < end:
             self.conn.pump(1.5)
             for ev in self.events():
+                if ev.get("method") == "event.big_data":
+                    self.last_telemetry = self._parse_telemetry(ev.get("params", {}))
                 if on_status:
                     on_status({"event": ev})
+            info = self.job_info(job_id)
+            if info:
+                self.last_job_info = info
             st = self.status()
             if on_status:
                 on_status(st)
-            cat, sub = st.get("category"), st.get("sub_category")
+            cat = st.get("category")
             if cat == "processing":
                 seen_printing = True
-            if cat == "idle" and seen_printing:
+            # prefer the explicit per-job signal; fall back to the idle-after-printing heuristic
+            if info.get("job_state") == "finished" or (cat == "idle" and seen_printing):
                 break
         return job_id

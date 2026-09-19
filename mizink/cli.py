@@ -56,6 +56,13 @@ def cmd_print(a):
         job = p.print_image(a.image, copies=a.copies, fit=a.fit,
                             on_progress=prog, on_status=status, wait=not a.no_wait)
         print(f"done, job_id={job}")
+        ji = p.last_job_info
+        if ji:
+            print(f"  job_state={ji.get('job_state')} copies={ji.get('prt_copies')} "
+                  f"print_time={ji.get('print_time')}ms")
+        tm = p.last_telemetry
+        if tm.get("printed_total") is not None:
+            print(f"  lifetime prints: {tm['printed_total']} (finished {tm['finished_total']})")
 
 
 def cmd_keepalive(a):
