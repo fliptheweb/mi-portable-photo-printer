@@ -75,3 +75,23 @@ Notes:
 - `job_info` gives an explicit `job_state:"finished"` — cleaner than watching `mixed_status`
   return to `idle`. `print_time`/`transfer_time` are milliseconds.
 - `event.big_data.total.printed` is the printer's lifetime print counter.
+
+### Status phases (`mixed_status` → `category` / `sub_category`)
+
+A job walks through these `sub_category` values (observed across captures):
+
+```
+init        idle, no job
+smart_sheet feeding the ZINK Smart Sheet (auto colour calibration on a fresh paper pack)
+decoding    receiving/decoding the JPEG
+pre_heat    warming the thermal head
+load_paper  pulling a sheet
+printing    printing
+idle        done
+```
+
+`category` is `idle` between jobs and `processing` while a job runs.
+
+**Calibration is not a command.** The ZINK Smart Sheet is run by the printer's firmware
+before the first print of a new pack; the client only observes it as `sub_category:"smart_sheet"`.
+No calibration command, coefficients, or profile is exchanged over Bluetooth.
