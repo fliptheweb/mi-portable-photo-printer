@@ -20,11 +20,21 @@ of a phone-only gadget. [Protocol](docs/PROTOCOL.md) and encryption were reverse
 ```bash
 mizink status                 # battery, state, firmware
 mizink print photo.jpg        # resize any image to 1040×1560 and print
+mizink print a.jpg b.jpg      # print several in sequence (queued one at a time)
 mizink keepalive --reconnect  # hold the idle-dropping link open for a service
 ```
 
 `print` waits for the job to finish (`job_info`) and reports the job state and the
-printer's lifetime print counter (from its `event.big_data` telemetry).
+printer's lifetime print counter (from its `event.big_data` telemetry). The printer
+prints one job at a time; `mizink` retries while it reports busy and prints multiple
+images in order.
+
+## Print lifecycle
+
+<img src="docs/lifecycle.svg" alt="Print lifecycle: init → smart_sheet (calibration paper) → decoding → pre_heat → load_paper → printing → idle" width="100%">
+
+`smart_sheet` is the ZINK Smart Sheet — a calibration card the printer feeds itself on a
+fresh paper pack; it is firmware-driven, not a command (see [docs/PROTOCOL.md](docs/PROTOCOL.md)).
 
 ## Install
 

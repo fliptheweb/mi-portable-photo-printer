@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="235" viewBox="0 95 1240 235" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#dfe3ea"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#9aa3b2" flood-opacity="0.35"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a7"/>
+    </marker>
+  </defs>
+
+  <rect width="1240" height="340" fill="#fbfcfe"/>
+  <rect width="1240" height="340" fill="url(#dots)"/>
+
+  <!-- category bands -->
+  <rect x="380" y="250" width="650" height="30" rx="15" fill="#eaf3ff" stroke="#bcd6ff"/>
+  <text x="705" y="270" font-size="13" font-weight="600" fill="#3b6bd6" text-anchor="middle">category: processing</text>
+  <text x="110" y="270" font-size="13" font-weight="600" fill="#7a8598" text-anchor="middle">category: idle</text>
+  <text x="1130" y="270" font-size="13" font-weight="600" fill="#7a8598" text-anchor="middle">idle</text>
+
+  <!-- arrows (behind boxes) -->
+  <g stroke="#8b93a7" stroke-width="2.5" marker-end="url(#arrow)" fill="none">
+    <line x1="180" y1="155" x2="212" y2="155"/>
+    <line x1="350" y1="155" x2="382" y2="155"/>
+    <line x1="520" y1="155" x2="552" y2="155"/>
+    <line x1="690" y1="155" x2="722" y2="155"/>
+    <line x1="860" y1="155" x2="892" y2="155"/>
+    <line x1="1030" y1="155" x2="1062" y2="155"/>
+  </g>
+
+  <!-- sticky notes -->
+  <!-- init -->
+  <g transform="rotate(-1.5 110 155)">
+    <rect x="40" y="120" width="140" height="70" rx="12" fill="#eceff4" stroke="#cdd3de" filter="url(#shadow)"/>
+    <text x="110" y="162" font-size="17" font-weight="600" fill="#3a4152" text-anchor="middle">init</text>
+  </g>
+  <!-- smart_sheet -->
+  <g transform="rotate(1.5 280 155)">
+    <rect x="210" y="120" width="140" height="70" rx="12" fill="#d4f3ee" stroke="#7fd3c6" filter="url(#shadow)"/>
+    <text x="280" y="155" font-size="16" font-weight="700" fill="#1f7a6c" text-anchor="middle">smart_sheet</text>
+    <text x="280" y="176" font-size="11" fill="#2b8c7d" text-anchor="middle">calibration paper</text>
+  </g>
+  <!-- decoding -->
+  <g transform="rotate(-1 450 155)">
+    <rect x="380" y="120" width="140" height="70" rx="12" fill="#fdf3cf" stroke="#eBD98a" filter="url(#shadow)"/>
+    <text x="450" y="162" font-size="17" font-weight="600" fill="#8a6d1e" text-anchor="middle">decoding</text>
+  </g>
+  <!-- pre_heat -->
+  <g transform="rotate(1 620 155)">
+    <rect x="550" y="120" width="140" height="70" rx="12" fill="#ffe6cf" stroke="#f5bd86" filter="url(#shadow)"/>
+    <text x="620" y="162" font-size="17" font-weight="600" fill="#a85f1e" text-anchor="middle">pre_heat</text>
+  </g>
+  <!-- load_paper -->
+  <g transform="rotate(-1 790 155)">
+    <rect x="720" y="120" width="140" height="70" rx="12" fill="#ffe0d6" stroke="#f2a98f" filter="url(#shadow)"/>
+    <text x="790" y="162" font-size="16" font-weight="600" fill="#b0512f" text-anchor="middle">load_paper</text>
+  </g>
+  <!-- printing -->
+  <g transform="rotate(1.5 960 155)">
+    <rect x="890" y="120" width="140" height="70" rx="12" fill="#d8f2d0" stroke="#8ed184" filter="url(#shadow)"/>
+    <text x="960" y="162" font-size="17" font-weight="700" fill="#2f7d29" text-anchor="middle">printing</text>
+  </g>
+  <!-- idle -->
+  <g transform="rotate(-1.5 1130 155)">
+    <rect x="1060" y="120" width="140" height="70" rx="12" fill="#eceff4" stroke="#cdd3de" filter="url(#shadow)"/>
+    <text x="1130" y="162" font-size="17" font-weight="600" fill="#3a4152" text-anchor="middle">idle</text>
+  </g>
+
+  <text x="40" y="315" font-size="12.5" fill="#8892a4">smart_sheet appears only on a fresh ZINK paper pack (firmware-driven auto colour calibration — no client command).</text>
+</svg>
