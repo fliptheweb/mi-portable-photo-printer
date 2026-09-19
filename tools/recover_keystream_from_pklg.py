@@ -192,7 +192,31 @@ def recover(path):
                                        key=lambda f: f["pkg_num"])]
     if not files:
         sys.exit("no file-channel frames found — the capture must include printing an image")
-    return recover_from_frames(files, ch1)
+    ks = recover_from_frames(files, ch1)
+    _validate(ks, ch1)
+    return ks
+
+
+def _validate(ks, ch1):
+    """Guard against a silently-wrong keystream. The crib bootstrap can be corrupted by
+    captures that are not a clean pure-white print (shared `{"result":` prefixes plus many
+    identical status-poll frames let a wrong crib win the per-offset majority). Decrypt the
+    JSON control frames with the recovered keystream: on a correct keystream they all parse;
+    if too few do, abort instead of emitting a bad keystream."""
+    import json
+    ok = total = 0
+    for b in ch1:
+        total += 1
+        dec = bytes(b[o] ^ ks[o] for o in range(len(b)))
+        try:
+            json.loads(dec)
+            ok += 1
+        except ValueError:
+            pass
+    if total and ok < max(3, total // 2):
+        sys.exit(f"recovered keystream fails self-check ({ok}/{total} control frames decrypt to "
+                 f"valid JSON) — the capture is likely not a clean pure-white print; recapture "
+                 f"printing white_pure.png with nothing else, or supply the token instead")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
