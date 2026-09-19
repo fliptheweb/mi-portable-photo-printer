@@ -23,6 +23,9 @@ mizink print photo.jpg        # resize any image to 1040×1560 and print
 mizink keepalive --reconnect  # hold the idle-dropping link open for a service
 ```
 
+`print` waits for the job to finish (`job_info`) and reports the job state and the
+printer's lifetime print counter (from its `event.big_data` telemetry).
+
 ## Install
 
 ```bash

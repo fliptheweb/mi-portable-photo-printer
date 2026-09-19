@@ -60,9 +60,18 @@ Bodies are `{"id":N,"method":...,"params":...}`, encrypted. Print flow:
    (channel 2, encoding 2: file streamed in frames of 4-byte LE job_id + up to 924 JPEG bytes,
     packageNum/packageTotal set, msgAttribute has the multi-package bit)
 -> confirm_job  [job_id]                   <- ["OK"]
--> mixed_status [] (poll)                  category: idle -> processing (decoding, pre_heat,
+-> job_info     [job_id] (poll)            <- [{job_id, job_type, job_state, prt_copies,
+                                               transfer_time, print_time, clients, did, fw_ver}]
+   (or mixed_status [] poll)               category: idle -> processing (decoding, pre_heat,
                                            load_paper, printing) -> idle
-                                           printer also emits event.big_data on finish
+<- event.big_data (unsolicited, on finish) {mijia:{"0":{finished}}, total:{finished,printed},
+                                           TMD_code, did}
 ```
 
 Image: baseline JPEG, **1040 × 1560 px**, standard Huffman tables. `job_type 0` = photo.
+
+Notes:
+- `clean_data` is sent by the Mi Home app before every `print_job`; mizink does the same.
+- `job_info` gives an explicit `job_state:"finished"` — cleaner than watching `mixed_status`
+  return to `idle`. `print_time`/`transfer_time` are milliseconds.
+- `event.big_data.total.printed` is the printer's lifetime print counter.
