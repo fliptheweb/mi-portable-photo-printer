@@ -15,6 +15,7 @@ from .protocol import (
 from .transport import Connection
 
 CHUNK = 924  # JPEG bytes per file frame (4-byte job id is prepended => 928-byte body)
+ERR_BUSY = -8006  # print_job error code when the printer is busy / not yet ready
 
 
 class PrinterError(RuntimeError):
@@ -149,6 +150,44 @@ class Printer:
             if on_progress:
                 on_progress(i + 1, total)
 
+    def _start_job(self, file_size: int, copies: int, busy_timeout: float = 30.0) -> int:
+        """Open a print job, retrying while the printer reports busy/not-ready (`-8006`).
+
+        The native app polls print_job until the printer accepts it (e.g. right after connect
+        or while a previous job is still running); we do the same with a short backoff.
+        """
+        end = time.time() + busy_timeout
+        delay = 0.5
+        while True:
+            r = self.rpc("print_job", {"copies": copies, "channel": 64,
+                                       "job_type": 0, "file_size": file_size}, timeout=30)
+            res = r.get("result")
+            if isinstance(res, dict) and "job_id" in res:
+                return res["job_id"]
+            err = r.get("error")
+            code = err.get("code") if isinstance(err, dict) else None
+            if code == ERR_BUSY:
+                if time.time() < end:
+                    self.conn.pump(delay)
+                    delay = min(delay * 1.5, 3.0)
+                    continue
+                raise PrinterError(f"printer stayed busy for >{busy_timeout:.0f}s (error {ERR_BUSY})")
+            raise PrinterError(f"print_job rejected: {r!r}")
+
+    def print_many(self, sources, copies: int = 1, fit: str = "cover",
+                   on_progress=None, on_status=None, timeout: float = 180.0) -> list:
+        """Print several images in sequence, waiting for each to finish. Returns job ids."""
+        sources = list(sources)
+        jobs = []
+        for i, src in enumerate(sources):
+            try:
+                jobs.append(self.print_image(src, copies=copies, fit=fit, on_progress=on_progress,
+                                             on_status=on_status, wait=True, timeout=timeout))
+            except Exception as e:
+                raise PrinterError(f"image {i + 1}/{len(sources)} ({src}): {e} "
+                                   f"(printed job ids so far: {jobs})") from e
+        return jobs
+
     def print_image(self, source, copies: int = 1, fit: str = "cover",
                     on_progress=None, on_status=None, wait: bool = True,
                     timeout: float = 180.0) -> int:
@@ -158,12 +197,7 @@ class Printer:
         """
         jpeg = _image.prepare(source, fit=fit)
         self.clean_data()  # the native app resets the data channel before every job
-        r = self.rpc("print_job", {"copies": copies, "channel": 64,
-                                   "job_type": 0, "file_size": len(jpeg)}, timeout=30)
-        res = r.get("result")
-        if not isinstance(res, dict) or "job_id" not in res:
-            raise PrinterError(f"print_job rejected: {r!r}")
-        job_id = res["job_id"]
+        job_id = self._start_job(len(jpeg), copies)
         self._send_file(job_id, jpeg, on_progress=on_progress)
         ok = self.rpc("confirm_job", [job_id])
         if ok.get("result") != ["OK"]:

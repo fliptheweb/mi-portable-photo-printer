@@ -41,6 +41,8 @@ def cmd_info(a):
 
 
 def cmd_print(a):
+    if a.no_wait and len(a.image) > 1:
+        sys.exit("--no-wait only applies to a single image (the printer prints one job at a time)")
     with _open(a) as p:
         st = p.status()
         print(f"printer: {st.get('category')}/{st.get('sub_category')}, battery {st.get('battery')}%")
@@ -53,12 +55,16 @@ def cmd_print(a):
             if "event" not in s:
                 print(f"  {s.get('category')}/{s.get('sub_category')}", flush=True)
 
-        job = p.print_image(a.image, copies=a.copies, fit=a.fit,
-                            on_progress=prog, on_status=status, wait=not a.no_wait)
-        print(f"done, job_id={job}")
+        if len(a.image) == 1:
+            jobs = [p.print_image(a.image[0], copies=a.copies, fit=a.fit,
+                                  on_progress=prog, on_status=status, wait=not a.no_wait)]
+        else:
+            jobs = p.print_many(a.image, copies=a.copies, fit=a.fit,
+                                on_progress=prog, on_status=status)
+        print(f"done, job_id(s)={jobs}")
         ji = p.last_job_info
         if ji:
-            print(f"  job_state={ji.get('job_state')} copies={ji.get('prt_copies')} "
+            print(f"  last job_state={ji.get('job_state')} copies={ji.get('prt_copies')} "
                   f"print_time={ji.get('print_time')}ms")
         tm = p.last_telemetry
         if tm.get("printed_total") is not None:
@@ -94,10 +100,11 @@ def main(argv=None):
 
     s = sub.add_parser("print", help="print an image file")
     _common(s)
-    s.add_argument("image")
+    s.add_argument("image", nargs="+", help="one or more image files (printed in sequence)")
     s.add_argument("--copies", type=int, default=1)
     s.add_argument("--fit", choices=["cover", "contain", "stretch"], default="cover")
-    s.add_argument("--no-wait", action="store_true", help="return once sent, don't poll to completion")
+    s.add_argument("--no-wait", action="store_true",
+                   help="single image only: return once sent, don't poll to completion")
     s.set_defaults(fn=cmd_print)
 
     s = sub.add_parser("keepalive", help="hold the Bluetooth link open (pings status)")
