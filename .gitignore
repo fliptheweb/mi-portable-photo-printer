@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+build/
+dist/
+*.egg-info/
+# never commit secrets or personal data
+config.json
+*.keystream
+captures/
+*.pklg

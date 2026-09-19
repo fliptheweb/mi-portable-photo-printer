@@ -1,0 +1,86 @@
+# mizink
+
+Print to the **Xiaomi Mi Portable Photo Printer** (ZINK, model `hannto.printer.basil`) over
+Bluetooth from your own computer — no Mi Home app, no cloud at print time.
+
+```bash
+mizink status                 # battery + state
+mizink print photo.jpg        # print any image
+mizink keepalive --reconnect  # hold the link open for a home-automation service
+```
+
+## Why this exists
+
+The printer has no Wi-Fi, no AirPrint, no USB data port — it only pairs with the Mi Home
+phone app over Bluetooth. That makes it impossible to print from a laptop, a server, or a
+smart-home setup like Home Assistant. There was no library and no public protocol for this
+model, so photos could only come from a phone.
+
+We wanted one thing: **send a picture to this printer from a script**, so it can become a
+building block — a Home Assistant action, a photo-booth, a "print this" button — instead of
+a phone-only gadget. Getting there meant reverse-engineering the Bluetooth protocol and its
+encryption from packet captures. `mizink` is the result, packaged so anyone with the same
+printer can reuse it.
+
+## What it does
+
+- **Status** — battery, state, firmware, serial (`mizink status`, `mizink info`).
+- **Bluetooth connection with keep-alive** — the printer drops an idle link after ~15 s;
+  `mizink keepalive` holds it open (and can auto-reconnect) so a service is always ready.
+- **Printing** — resizes any image to the printer's 1040×1560 and sends it
+  (`mizink print photo.jpg`).
+
+## Install
+
+Requires Python 3.9+ and, on macOS, Apple's Bluetooth stack via pyobjc.
+
+```bash
+pip install mizink                 # + on macOS:
+pip install "mizink[macos]"
+```
+
+macOS is supported today (IOBluetooth). Linux/Windows need a small transport shim over an
+RFCOMM serial port — see [docs/PROTOCOL.md](docs/PROTOCOL.md); the protocol layer is identical.
+
+## Setup
+
+1. **Pair** the printer with your computer's Bluetooth once, like any device.
+2. **Get your printer's key.** Encryption is tied to *your* device, so you need its
+   12-byte miio token (or a keystream captured from one print). Two-minute guide:
+   [docs/GET_KEY.md](docs/GET_KEY.md).
+3. **Configure** — pass `--address`/`--token`, set `MIZINK_ADDRESS`/`MIZINK_TOKEN`, or drop
+   a `~/.config/mizink/config.json` (see `config.example.json`).
+
+```bash
+mizink --address F0:13:C1:3F:63:94 --token <your-token> status
+mizink print birthday.jpg --fit cover
+```
+
+## Use as a library
+
+```python
+from mizink import Printer, Cipher
+
+with Printer("F0:13:C1:3F:63:94", Cipher.from_token("<token>")) as p:
+    print(p.status())
+    p.print_image("photo.jpg", fit="cover")
+```
+
+## Home Assistant
+
+Wrap `mizink print` in a [`shell_command`](https://www.home-assistant.io/integrations/shell_command/)
+or a command-line script and trigger it from an automation. Run `mizink keepalive --reconnect`
+as a background service so the link is warm when an automation fires. Example in
+[examples/](examples/).
+
+## Safety & scope
+
+- Each print consumes a sheet of ZINK paper. Battery below ~20% may refuse to print.
+- Your token is a per-device secret. Do not commit it; `config.json` and `*.keystream` are
+  git-ignored.
+- Independent, community reverse-engineering. Not affiliated with or endorsed by Xiaomi or
+  Hannto. "Xiaomi", "Mijia" and "Hannto" are trademarks of their owners. Use at your own risk.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

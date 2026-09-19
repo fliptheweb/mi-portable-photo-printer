@@ -1,0 +1,15 @@
+# Home Assistant: print an image via mizink.
+# 1) keep the Bluetooth link warm with a background service (systemd/launchd):
+#      mizink keepalive --reconnect
+# 2) expose a shell_command and call it from an automation / script:
+
+shell_command:
+  # pass the file path as a template variable
+  print_photo: 'mizink print "{{ path }}" --fit cover'
+
+# script:
+#   print_latest_photo:
+#     sequence:
+#       - service: shell_command.print_photo
+#         data:
+#           path: /media/photos/latest.jpg

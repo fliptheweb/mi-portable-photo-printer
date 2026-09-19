@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mizink"
+version = "0.1.0"
+description = "Drive the Xiaomi Mi Portable Photo Printer (ZINK, hannto.printer.basil) over Bluetooth without the Mi Home app"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "mizink contributors"}]
+keywords = ["xiaomi", "mijia", "hannto", "zink", "photo printer", "bluetooth", "home-assistant"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Topic :: Printing",
+]
+dependencies = ["pillow>=9"]
+
+[project.optional-dependencies]
+macos = ["pyobjc-framework-IOBluetooth>=9"]
+
+[project.scripts]
+mizink = "mizink.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/YOURNAME/mizink"
+
+[tool.setuptools]
+packages = ["mizink"]
