@@ -7,10 +7,11 @@ Photo Printer Pro, Liene PixCut), so parts may transfer to those.
 
 ## Transport
 
-- Bluetooth Classic, **RFCOMM channel 1** (Serial Port Profile, UUID `00001101-...`).
+- Bluetooth Classic. The printer advertises three RFCOMM channels over SDP:
+  - **1** - Serial Port Profile (UUID `00001101-...`). Speaks the full protocol directly. This is what `mizink` uses.
+  - **22** - Apple iAP2 (Made-for-iPhone). Same protocol, wrapped in an iAP2 accessory session. Only needed on an iOS host.
+  - **23** - advertised as `WeChat`, but unimplemented in firmware (a stub that never replies).
 - The printer drops an idle link after ~15 s; send anything (e.g. `mixed_status`) to keep it.
-- On an Apple host the printer also advertises an iAP2 (Made-for-iPhone) channel; it is *not*
-  required - channel 1 speaks the full protocol directly, which is what `mizink` uses.
 - If a connection suddenly fails to open on macOS, the stored pairing key is likely stale;
   re-pair (`blueutil --unpair <mac> && blueutil --pair <mac>`).
 
@@ -72,7 +73,7 @@ Image: baseline JPEG, **1040 × 1560 px**, standard Huffman tables. `job_type 0`
 
 Notes:
 - `clean_data` is sent by the Mi Home app before every `print_job`; mizink does the same.
-- `job_info` gives an explicit `job_state:"finished"` — cleaner than watching `mixed_status`
+- `job_info` gives an explicit `job_state:"finished"` - cleaner than watching `mixed_status`
   return to `idle`. `print_time`/`transfer_time` are milliseconds.
 - `event.big_data.total.printed` is the printer's lifetime print counter.
 
@@ -97,3 +98,52 @@ idle        done
 **Calibration is not a command.** The ZINK Smart Sheet is run by the printer's firmware
 before the first print of a new pack; the client only observes it as `sub_category:"smart_sheet"`.
 No calibration command, coefficients, or profile is exchanged over Bluetooth.
+
+## Getting the firmware and Mi Home plugin
+
+Neither the device firmware nor the app protocol is documented, but both are
+downloadable from Xiaomi's cloud by MIoT `model` alone. The printer does **not**
+need to be online or even paired for these queries.
+
+All calls go to the regional MIoT API host `https://{region}.api.io.mi.com/app`
+(`region` in `cn`, `de`, `us`, `ru`, `sg`, `i2`, …; the printer's firmware is served
+from the "abroad" regions, so `de`/`sg`/`ru` return a URL while `cn` may 403). Each
+request is signed with a logged-in Mi account session (the standard MIoT
+nonce + `signed_nonce` HMAC/RC4 scheme). The easiest way to sign is to reuse
+[`Xiaomi-cloud-tokens-extractor`](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)'s
+`XiaomiCloudConnector` - log in once, then add the two calls below.
+
+### Firmware image
+
+```
+POST {api}/home/latest_version
+  data = {"model":"hannto.printer.basil"}
+→ { "code":0, "result":{ "version":"1.1.4_0092",
+                          "url":"https://…_upd_hannto.printer.basil.bin?…",
+                          "md5":"…", "changeLog":"…" } }
+```
+
+`url` is a presigned CDN link to the raw MCU image; verify it against `md5`.
+The image is a partition container: the application layer (the JSON-RPC handler,
+method/state/error strings) lives in a **gzip-compressed `FIRMWARE` partition**
+inside it - carve and `gunzip` that region to read it.
+
+### Mi Home device plugin
+
+The app-side protocol (RPC builders, parameter shapes, states, error codes) is
+implemented in the Mi Home **device plugin**, an Android package fetched by model:
+
+```
+POST {api}/v2/plugin/fetch_plugin
+  data = {"latest_req":{"region":"DE","app_platform":"Android",
+                        "plugins":[{"model":"hannto.printer.basil"}],
+                        "api_version":10070,"package_type":""},
+          "backup_req":{"api_level":101,
+                        "plugins":[{"model":"hannto.printer.basil"}],
+                        "app_platform":"phone"}}
+→ backup_info[0]: { package_name:"com.hannto.basil.android", type:"MPK",
+                    download_url:"https://…/com.hannto.basil.android_*.zip?…", … }
+```
+
+`type:"MPK"` is a native (dex) plugin; unzip and decompile `classes.dex`
+(jadx / androguard) to read the command layer.
