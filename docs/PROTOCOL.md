@@ -97,3 +97,52 @@ idle        done
 **Calibration is not a command.** The ZINK Smart Sheet is run by the printer's firmware
 before the first print of a new pack; the client only observes it as `sub_category:"smart_sheet"`.
 No calibration command, coefficients, or profile is exchanged over Bluetooth.
+
+## Getting the firmware and Mi Home plugin
+
+Neither the device firmware nor the app protocol is documented, but both are
+downloadable from Xiaomi's cloud by MIoT `model` alone. The printer does **not**
+need to be online or even paired for these queries.
+
+All calls go to the regional MIoT API host `https://{region}.api.io.mi.com/app`
+(`region` in `cn`, `de`, `us`, `ru`, `sg`, `i2`, …; the printer's firmware is served
+from the "abroad" regions, so `de`/`sg`/`ru` return a URL while `cn` may 403). Each
+request is signed with a logged-in Mi account session (the standard MIoT
+nonce + `signed_nonce` HMAC/RC4 scheme). The easiest way to sign is to reuse
+[`Xiaomi-cloud-tokens-extractor`](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)'s
+`XiaomiCloudConnector` — log in once, then add the two calls below.
+
+### Firmware image
+
+```
+POST {api}/home/latest_version
+  data = {"model":"hannto.printer.basil"}
+→ { "code":0, "result":{ "version":"1.1.4_0092",
+                          "url":"https://…_upd_hannto.printer.basil.bin?…",
+                          "md5":"…", "changeLog":"…" } }
+```
+
+`url` is a presigned CDN link to the raw MCU image; verify it against `md5`.
+The image is a partition container: the application layer (the JSON-RPC handler,
+method/state/error strings) lives in a **gzip-compressed `FIRMWARE` partition**
+inside it — carve and `gunzip` that region to read it.
+
+### Mi Home device plugin
+
+The app-side protocol (RPC builders, parameter shapes, states, error codes) is
+implemented in the Mi Home **device plugin**, an Android package fetched by model:
+
+```
+POST {api}/v2/plugin/fetch_plugin
+  data = {"latest_req":{"region":"DE","app_platform":"Android",
+                        "plugins":[{"model":"hannto.printer.basil"}],
+                        "api_version":10070,"package_type":""},
+          "backup_req":{"api_level":101,
+                        "plugins":[{"model":"hannto.printer.basil"}],
+                        "app_platform":"phone"}}
+→ backup_info[0]: { package_name:"com.hannto.basil.android", type:"MPK",
+                    download_url:"https://…/com.hannto.basil.android_*.zip?…", … }
+```
+
+`type:"MPK"` is a native (dex) plugin; unzip and decompile `classes.dex`
+(jadx / androguard) to read the command layer.
