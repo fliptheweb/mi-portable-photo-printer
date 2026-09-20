@@ -24,17 +24,9 @@ mizink print a.jpg b.jpg      # print several in sequence (queued one at a time)
 mizink keepalive --reconnect  # hold the idle-dropping link open for a service
 ```
 
-`print` waits for the job to finish (`job_info`) and reports the job state and the
-printer's lifetime print counter (from its `event.big_data` telemetry). The printer
-prints one job at a time; `mizink` retries while it reports busy and prints multiple
-images in order.
-
 ## Print lifecycle
 
 <img src="docs/lifecycle.svg" alt="Print lifecycle: init → smart_sheet (calibration paper) → decoding → pre_heat → load_paper → printing → idle" width="100%">
-
-`smart_sheet` is the ZINK Smart Sheet — a calibration card the printer feeds itself on a
-fresh paper pack; it is firmware-driven, not a command (see [docs/PROTOCOL.md](docs/PROTOCOL.md)).
 
 ## Install
 
@@ -54,7 +46,7 @@ The printer encrypts everything with a key that is unique to *your* device - its
 miio token. You need yours; there is no shared or default key.
 
 1. Get your printer's token - three ways (full guide in [docs/GET_KEY.md](docs/GET_KEY.md)):
-   - from **Home Assistant** - [`extract_token_from_ha.py`](tools/extract_token_from_ha.py)
+   - from **Home Assistant** - [`extract_token_from_ha.py`](tools/extract_token_from_ha.py) (if you have already added your Xiaomi account to Home Assistant)
    - from **Mi Cloud** - [Xiaomi-cloud-tokens-extractor](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)
    - **without a token** - recover a keystream from a white-page capture with [`recover_keystream_from_pklg.py`](tools/recover_keystream_from_pklg.py)
 2. Pair the printer with your Mac's Bluetooth once.

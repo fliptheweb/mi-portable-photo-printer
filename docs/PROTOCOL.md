@@ -78,6 +78,8 @@ Notes:
 
 ### Status phases (`mixed_status` → `category` / `sub_category`)
 
+<img src="lifecycle.svg" alt="Print lifecycle: init → smart_sheet (calibration paper) → decoding → pre_heat → load_paper → printing → idle" width="100%">
+
 A job walks through these `sub_category` values (observed across captures):
 
 ```
