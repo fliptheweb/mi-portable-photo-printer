@@ -13,7 +13,7 @@ no Mi Home app, no phone.
 
 The printer only pairs with the Mi Home phone app over Bluetooth - no Wi-Fi, no AirPrint. `mizink`
 prints to it from a script, so it can be a Home Assistant action or a "print this" button instead
-of a phone-only gadget. [Protocol](docs/PROTOCOL.md) and encryption were reverse-engineered from Bluetooth packet captures.
+of a phone-only gadget. [Protocol](docs/PROTOCOL.md) and encryption were reverse-engineered from Bluetooth packet captures, live on-device probing, the official Xiaomi firmware image (unpacking + partial disassembly), and the Mi Home Android plugin. No vendor SDK or documentation.
 
 ## What it does
 
