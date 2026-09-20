@@ -71,12 +71,17 @@ class Printer:
         self._sn += 1
         return self._sn
 
-    def rpc(self, method: str, params, timeout: float = 15.0):
+    def rpc(self, method: str, params, timeout: float = 15.0, expect_reply: bool = True):
         mid = self._next_sn()
         payload = json.dumps({"id": mid, "method": method, "params": params},
                              separators=(",", ":")).encode()
         self.conn.write(build_frame(CH_JSON, REQUEST, ENC_JSON, mid,
                                     self.cipher.crypt(payload), ENCTYPE_MIJIA))
+        if not expect_reply:
+            # some methods (e.g. clean_data) are fire-and-forget and never reply
+            self.conn.pump(0.3)
+            self._drain()
+            return None
         end = time.time() + timeout
         while time.time() < end:
             self.conn.pump(0.03)
@@ -115,9 +120,13 @@ class Printer:
         r = self.rpc("get_prop", ["device_info"]).get("result", [{}])
         return r[0] if isinstance(r, list) and r else {}
 
-    def clean_data(self) -> dict:
-        """Reset the data channel before a job. The Mi Home app sends this before every print."""
-        return self.rpc("clean_data", {"delay_times": 0})
+    def clean_data(self) -> None:
+        """Reset the data channel before a job. The Mi Home app sends this before every print.
+
+        The printer does not reply to clean_data, so we fire it and continue (waiting for a
+        reply that never comes would just time out).
+        """
+        self.rpc("clean_data", {"delay_times": 0}, expect_reply=False)
 
     def job_info(self, job_id: int) -> dict:
         """Per-job status: job_state, prt_copies, transfer_time, print_time, ..."""
