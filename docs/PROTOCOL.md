@@ -7,10 +7,14 @@ Photo Printer Pro, Liene PixCut), so parts may transfer to those.
 
 ## Transport
 
-- Bluetooth Classic, **RFCOMM channel 1** (Serial Port Profile, UUID `00001101-...`).
+- Bluetooth Classic. SDP advertises three RFCOMM channels:
+  - **channel 1** - Serial Port Profile (SPP, UUID `00001101-...`). The one `mizink` uses; it
+    speaks the full JSON-RPC + file protocol directly.
+  - **channel 22** - Apple iAP2 (Made-for-iPhone). Same frames wrapped in an iAP2 EA session
+    (`com.hannto.basil`); only relevant on iOS hosts. Not required.
+  - **channel 23** - WeChat Mini-Program transport. A different protocol; stays silent to our
+    frames. Unused.
 - The printer drops an idle link after ~15 s; send anything (e.g. `mixed_status`) to keep it.
-- On an Apple host the printer also advertises an iAP2 (Made-for-iPhone) channel; it is *not*
-  required - channel 1 speaks the full protocol directly, which is what `mizink` uses.
 - If a connection suddenly fails to open on macOS, the stored pairing key is likely stale;
   re-pair (`blueutil --unpair <mac> && blueutil --pair <mac>`).
 
@@ -72,7 +76,7 @@ Image: baseline JPEG, **1040 × 1560 px**, standard Huffman tables. `job_type 0`
 
 Notes:
 - `clean_data` is sent by the Mi Home app before every `print_job`; mizink does the same.
-- `job_info` gives an explicit `job_state:"finished"` — cleaner than watching `mixed_status`
+- `job_info` gives an explicit `job_state:"finished"` - cleaner than watching `mixed_status`
   return to `idle`. `print_time`/`transfer_time` are milliseconds.
 - `event.big_data.total.printed` is the printer's lifetime print counter.
 
@@ -110,7 +114,7 @@ from the "abroad" regions, so `de`/`sg`/`ru` return a URL while `cn` may 403). E
 request is signed with a logged-in Mi account session (the standard MIoT
 nonce + `signed_nonce` HMAC/RC4 scheme). The easiest way to sign is to reuse
 [`Xiaomi-cloud-tokens-extractor`](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)'s
-`XiaomiCloudConnector` — log in once, then add the two calls below.
+`XiaomiCloudConnector` - log in once, then add the two calls below.
 
 ### Firmware image
 
@@ -125,7 +129,7 @@ POST {api}/home/latest_version
 `url` is a presigned CDN link to the raw MCU image; verify it against `md5`.
 The image is a partition container: the application layer (the JSON-RPC handler,
 method/state/error strings) lives in a **gzip-compressed `FIRMWARE` partition**
-inside it — carve and `gunzip` that region to read it.
+inside it - carve and `gunzip` that region to read it.
 
 ### Mi Home device plugin
 
