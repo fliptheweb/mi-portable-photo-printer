@@ -135,9 +135,17 @@ class Printer:
             "did": params.get("did"),
         }
 
-    def keep_alive(self, interval: float = 5.0, on_status=None) -> None:
-        """Hold the connection open, pinging status every `interval` s (Ctrl+C to stop)."""
-        self.conn.keep_alive(lambda: self.status(), interval=interval, on_status=on_status)
+    def keep_alive(self, interval: float = 30.0, on_status=None) -> None:
+        """Hold the connection open and keep the printer awake (Ctrl+C to stop).
+
+        Pinging status alone does NOT stop the printer's ~10-min idle auto-off; only the
+        `retime` method resets that off-timer. So each cycle we send `retime` (resets the
+        timer) and then read status (for battery/state and link liveness).
+        """
+        def ping():
+            self.rpc("retime", [])
+            return self.status()
+        self.conn.keep_alive(ping, interval=interval, on_status=on_status)
 
     def _send_file(self, job_id: int, data: bytes, on_progress=None):
         total = math.ceil(len(data) / CHUNK)

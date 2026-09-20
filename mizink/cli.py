@@ -19,9 +19,10 @@ def _common(ap):
 
 
 def _open(a) -> Printer:
+    # Return an unconnected Printer; callers use `with _open(a) as p:` which connects
+    # via __enter__. (Connecting here too would open ch1 twice and orphan the live one.)
     cipher = resolve_cipher(a.token, a.keystream)
-    p = Printer(resolve_address(a.address), cipher, verbose=a.verbose)
-    return p.connect()
+    return Printer(resolve_address(a.address), cipher, verbose=a.verbose)
 
 
 def cmd_status(a):
@@ -72,13 +73,31 @@ def cmd_print(a):
 
 
 def cmd_keepalive(a):
+    import os
+
+    def paused():
+        return bool(a.pause_file) and os.path.exists(a.pause_file)
+
     while True:
+        if paused():
+            time.sleep(1)
+            continue
         try:
             with _open(a) as p:
-                print(f"connected to {p.address}; holding link (Ctrl+C to stop)")
-                p.keep_alive(interval=a.interval,
-                             on_status=lambda s: print(time.strftime('%H:%M:%S'),
-                                                       s.get("category"), s.get("battery"), "%", flush=True))
+                print(f"connected to {p.address}; holding link with retime (Ctrl+C to stop)", flush=True)
+                last = None
+                while p.conn.is_open and not paused():
+                    p.rpc("retime", [])          # reset the ~10-min idle auto-off timer
+                    st = p.status()
+                    if st.get("battery") != last:
+                        last = st.get("battery")
+                        print(time.strftime('%H:%M:%S'), st.get("category"),
+                              st.get("battery"), "%", flush=True)
+                    end = time.time() + a.interval
+                    while time.time() < end and not paused():
+                        p.conn.pump(0.2)
+                if paused():
+                    print("pause file present; releasing link", flush=True)
         except KeyboardInterrupt:
             print("\nstopped")
             return
@@ -107,10 +126,12 @@ def main(argv=None):
                    help="single image only: return once sent, don't poll to completion")
     s.set_defaults(fn=cmd_print)
 
-    s = sub.add_parser("keepalive", help="hold the Bluetooth link open (pings status)")
+    s = sub.add_parser("keepalive", help="hold the link open and keep the printer awake (retime)")
     _common(s)
-    s.add_argument("--interval", type=float, default=5.0)
+    s.add_argument("--interval", type=float, default=30.0)
     s.add_argument("--reconnect", action="store_true", help="auto-reconnect if the link drops")
+    s.add_argument("--pause-file", help="release the link while this file exists (lets another "
+                                        "process, e.g. `mizink print`, use the single channel)")
     s.set_defaults(fn=cmd_keepalive)
 
     a = ap.parse_args(argv)
