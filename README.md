@@ -21,15 +21,18 @@ of a phone-only gadget. [Protocol](docs/PROTOCOL.md) and encryption were reverse
 mizink status                 # battery, state, firmware
 mizink print photo.jpg        # resize any image to 1040×1560 and print
 mizink print a.jpg b.jpg      # print several in sequence (queued one at a time)
-mizink keepalive --reconnect  # hold the idle-dropping link open for a service
 ```
 
 ## Idle shutdown
 
-The printer powers itself off after ~10 minutes of inactivity, and reports the time remaining
-before shutdown in its status. Reading status alone does **not** stop it - only the `retime`
-method resets the timer. `mizink keepalive --reconnect` sends `retime` on an interval, so a
-long-running service (e.g. a Home Assistant print button) keeps the printer awake and reachable.
+The printer powers itself off after **~10 minutes** of inactivity by default, and reports the
+time remaining before shutdown in its status. Reading status alone does **not** reset the timer -
+only the `retime` method does. Hold it awake for a long-running service (e.g. a Home Assistant
+print button) with:
+
+```bash
+mizink keepalive --reconnect  # sends retime on an interval to reset the auto-off timer
+```
 
 ## Print lifecycle
 
