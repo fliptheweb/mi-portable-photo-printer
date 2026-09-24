@@ -24,6 +24,13 @@ mizink print a.jpg b.jpg      # print several in sequence (queued one at a time)
 mizink keepalive --reconnect  # hold the idle-dropping link open for a service
 ```
 
+## Idle shutdown
+
+The printer powers itself off after ~10 minutes of inactivity, and reports the time remaining
+before shutdown in its status. Reading status alone does **not** stop it - only the `retime`
+method resets the timer. `mizink keepalive --reconnect` sends `retime` on an interval, so a
+long-running service (e.g. a Home Assistant print button) keeps the printer awake and reachable.
+
 ## Print lifecycle
 
 <img src="docs/lifecycle.svg" alt="Print lifecycle: init → smart_sheet (calibration paper) → decoding → pre_heat → load_paper → printing → idle" width="100%">
