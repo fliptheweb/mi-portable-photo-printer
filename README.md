@@ -25,10 +25,11 @@ mizink print a.jpg b.jpg      # print several in sequence (queued one at a time)
 
 ## Idle shutdown
 
-The printer powers itself off after **~10 minutes** of inactivity by default, and reports the
-time remaining before shutdown in its status. Reading status alone does **not** reset the timer -
-only the `retime` method does. Hold it awake for a long-running service (e.g. a Home Assistant
-print button) with:
+The printer powers itself off after **~10 minutes** of inactivity by default. Its status carries
+`time_left` - a countdown, in milliseconds, to that auto-off; it starts at ~600000 ms and ticks
+down in real time. Reading status does **not** reset it - only the `retime` method does (it resets
+the firmware `lpmn` off-timer and replies `["OK"]`). Hold the printer awake for a long-running
+service (e.g. a Home Assistant print button) with:
 
 ```bash
 mizink keepalive --reconnect  # sends retime on an interval to reset the auto-off timer
