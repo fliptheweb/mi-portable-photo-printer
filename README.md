@@ -21,7 +21,16 @@ of a phone-only gadget. [Protocol](docs/PROTOCOL.md) and encryption were reverse
 mizink status                 # battery, state, firmware
 mizink print photo.jpg        # resize any image to 1040×1560 and print
 mizink print a.jpg b.jpg      # print several in sequence (queued one at a time)
-mizink keepalive --reconnect  # hold the idle-dropping link open for a service
+```
+
+## Idle shutdown
+
+The printer powers itself off after **~10 minutes** of inactivity by default. Its status reports
+`time_left`, the milliseconds left until that auto-off. Reading status does **not** reset it; only
+the `retime` method does. Keep the printer awake with:
+
+```bash
+mizink keepalive --reconnect  # sends retime on an interval to reset the auto-off timer
 ```
 
 ## Print lifecycle
